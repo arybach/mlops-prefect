@@ -1,0 +1,24 @@
+FROM prefecthq/prefect:2-python3.10-conda
+# FROM python:3.10-slim
+LABEL maintainer="Alex R <mats.tumblebuns@gmail.com>"
+
+
+ARG AWS_ACCESS_KEY_ID
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+
+ARG AWS_SECRET_ACCESS_KEY
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+
+WORKDIR /prefect/
+
+RUN pip3 install --default-timeout=200 mlflow boto3 botocore requests numpy pandas "prefect>=2.0" "fugue[sql]" \
+    "dask<=2023.3.1" --upgrade && \
+    python3 -m pip install --default-timeout=200 "dask[distributed]" --upgrade
+
+EXPOSE 4200
+
+# just in case something like this is needed later
+ENV ARTIFACT_ROOT s3://sparkhudi/prefect/
+
+CMD prefect config set PREFECT_UI_API_URL="http://localhost:4200/api" && \ 
+    prefect server start --host 0.0.0.0

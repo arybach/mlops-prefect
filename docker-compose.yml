@@ -1,0 +1,99 @@
+version: '3.7'
+
+services:
+
+  spark-hudi:
+    build:
+      context: .
+      dockerfile: Dockerfile.jupyter
+      args:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+    container_name: spark_hudi
+    user: root
+    ports:
+      - "8888:8888" # jupyter notebook, but the actual link should contain a token and will be in the container logs
+      - "4044:4040" # apache spark web UI
+      - "9999:9999" # Expose the Hudi timeline server port
+    volumes:
+      - flows:/home/work:rw
+      - data:/home/work/data:rw
+      # credentials file is needed for accessing GCS
+      # - .credentials.json:/home/work/credentials.json:ro
+    environment:
+      - JUPYTER_ENABLE_LAB="yes"
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_MEMORY=4g
+      - SPARK_HOME=/usr/local/spark
+      - SPARK_CONF_DIR=/usr/local/spark/conf
+      - HADOOP_CONF_DIR=/etc/hadoop
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=jupyter
+      - PYSPARK_DRIVER_PYTHON_OPTS='notebook --no-browser --port=8888 --ip=0.0.0.0 --allow-root'
+      - HUDI_ENABLE_TIMELINE_SERVER=true # Enable the Hudi timeline server
+      - HUDI_TIMELINE_SERVER_BIND_ADDRESS=0.0.0.0 # Bind to all available interfaces
+      - HUDI_TIMELINE_SERVER_WEB_UI_PORT=9999 # Listen on port 9999
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    cpus: 2
+    mem_limit: 12g
+    networks:
+      - mlops
+      # locally-deployed metaflow (for flows testing) 
+      # - mfdeploy-metaflow-deployment-netwok
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+    container_name: mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - "data:/mlflow:rw"
+    environment:
+      # BACKEND_URI: sqlite:////mlflow/mlflow.db
+      # ARTIFACT_ROOT: /mlflow/artifacts
+      # ARTIFACT_ROOT: s3:/sparkhudi/mlflow/
+      # MYSQL_USER: 'mlflow'
+      # MYSQL_PASSWORD: 'mlflow'      
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    networks:
+      - mlops
+
+  prefect:
+    build:
+      context: .
+      dockerfile: Dockerfile.prefect
+    container_name: prefect
+    ports:
+      - "4200:4200" # port forward for prefect orion
+    volumes:
+      - "data:/prefect:rw"
+    environment:
+      # ARTIFACT_ROOT: s3:/sparkhudi/prefect/
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    networks:
+      - mlops
+
+networks:
+  mlops:
+    driver: bridge
+
+volumes:
+  elasticsearch:
+  flows:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./jupyter/
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data
