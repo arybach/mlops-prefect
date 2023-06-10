@@ -1,0 +1,21 @@
+deployments:
+- name: taxi_local
+  entrypoint: ./code/orchestrate.py:main_flow_local
+  workpool: 
+      name: mlops-prefect-pool
+  schedule: {}
+- name: taxi_s3
+  entrypoint: ./code/orchestrate_s3.py:main_flow_s3
+  workpool: 
+      name: mlops-prefect-pool
+  schedule: {}
+- name: taxi_params
+  entrypoint: ./code/orchestrate_params.py:main_flow_params
+  args:
+    - --train_url
+    - "https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2023-01.parquet"
+    - --val_url
+    - "https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2023-02.parquet"
+  workpool: 
+      name: mlops-prefect-pool
+  schedule: {}

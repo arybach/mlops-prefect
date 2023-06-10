@@ -63,3 +63,5 @@ deployments:
   workpool: 
       name: mlops-prefect-pool
   schedule: {}
+
+  when fetching from repo into existing ./code dir use access token
