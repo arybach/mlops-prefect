@@ -1,2 +1,8 @@
 data
-models
+jupyter/data
+jupyter/.ipynb_checkpoints
+jupyter/.prefect
+jupyter/__pycache__
+jupyter/models
+jupyter/code
+jupyter/.gitignore

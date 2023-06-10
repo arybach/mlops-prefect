@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
 
-  spark-hudi:
+  mlops:
     build:
       context: .
       dockerfile: Dockerfile.jupyter
@@ -10,7 +10,7 @@ services:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION}
-    container_name: spark_hudi
+    container_name: mlops
     user: root
     ports:
       - "8888:8888" # jupyter notebook, but the actual link should contain a token and will be in the container logs
@@ -43,11 +43,11 @@ services:
       # locally-deployed metaflow (for flows testing) 
       # - mfdeploy-metaflow-deployment-netwok
 
-  mlflow:
+  mlflow_mlops:
     build:
       context: .
       dockerfile: Dockerfile.mlflow
-    container_name: mlflow
+    container_name: mlflow_mlops
     ports:
       - "5000:5000"
     volumes:
@@ -63,11 +63,11 @@ services:
     networks:
       - mlops
 
-  prefect:
+  prefect_mlops:
     build:
       context: .
       dockerfile: Dockerfile.prefect
-    container_name: prefect
+    container_name: prefect_mlops
     ports:
       - "4200:4200" # port forward for prefect orion
     volumes:
