@@ -18,7 +18,7 @@ services:
       - "9999:9999" # Expose the Hudi timeline server port
     volumes:
       - flows:/home/work:rw
-      - data:/home/work/data:rw
+      #- data:/home/work/data:rw
       # credentials file is needed for accessing GCS
       # - .credentials.json:/home/work/credentials.json:ro
     environment:
