@@ -1,15 +1,35 @@
 deployments:
 - name: taxi_local
+  path: /home/work
   entrypoint: ./code/orchestrate.py:main_flow_local
   workpool: 
       name: mlops-prefect-pool
   schedule: {}
+- name: taxi_email
+  path: /home/work
+  entrypoint: ./code/orchestrate_email.py:main_flow_email
+  workpool: 
+      name: mlops-prefect-pool
+  schedule: {}
 - name: taxi_s3
+  path: /home/work
   entrypoint: ./code/orchestrate_s3.py:main_flow_s3
   workpool: 
       name: mlops-prefect-pool
   schedule: {}
 - name: taxi_params
+  path: /home/work
+  entrypoint: ./code/orchestrate_params.py:main_flow_params
+  args:
+    - --train_path
+    - "./code/data/green_tripdata_2023-01.parquet"
+    - --val_path
+    - "./code/data/green_tripdata_2023-02.parquet"
+  workpool: 
+      name: mlops-prefect-pool
+  schedule: {}
+- name: taxi_git
+  path: /home/work
   entrypoint: ./code/orchestrate_params.py:main_flow_params
   args:
     - --train_path

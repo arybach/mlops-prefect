@@ -20,6 +20,12 @@ ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 ARG AWS_REGION
 ENV AWS_REGION=${AWS_REGION}
 
+ARG PREFECT_API_URL
+ENV PREFECT_API_URL=${PREFECT_API_URL}
+
+ARG PREFECT_API_KEY
+ENV PREFECT_API_KEY=${PREFECT_API_KEY}
+
 # Spark dependencies
 # Default values can be overridden at build time
 # (ARGS are in lower case to distinguish them from ENV)
