@@ -1,6 +1,7 @@
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
 ARG OWNER=jupyter
+#ARG BASE_CONTAINER=$OWNER/scipy-notebook:python-3.9
 ARG BASE_CONTAINER=$OWNER/scipy-notebook:python-3.10
 FROM $BASE_CONTAINER
 
@@ -29,21 +30,21 @@ ENV PREFECT_API_KEY=${PREFECT_API_KEY}
 # Spark dependencies
 # Default values can be overridden at build time
 # (ARGS are in lower case to distinguish them from ENV)
-ARG spark_version="3.3.2"
-ARG SCALA_VERSION=2.12
-ARG hadoop_version="3" 
-# https://www.apache.org/dyn/closer.lua/spark/spark-3.3.2/spark-3.3.2-bin-hadoop3.tgz
-ARG spark_checksum="4cd2396069fbe0f8efde2af4fd301bf46f8c6317e9dea1dd42a405de6a38380635d49b17972cb92c619431acece2c3af4c23bfdf193cedb3ea913ed69ded23a1"
-ARG openjdk_version="8"
+# ARG spark_version="3.3.2"
+# ARG SCALA_VERSION=2.12
+# ARG hadoop_version="3" 
+# # https://www.apache.org/dyn/closer.lua/spark/spark-3.3.2/spark-3.3.2-bin-hadoop3.tgz
+# ARG spark_checksum="4cd2396069fbe0f8efde2af4fd301bf46f8c6317e9dea1dd42a405de6a38380635d49b17972cb92c619431acece2c3af4c23bfdf193cedb3ea913ed69ded23a1"
+# ARG openjdk_version="8"
 
-ENV APACHE_SPARK_VERSION="${spark_version}" \
-    HADOOP_VERSION="${hadoop_version}"
-ENV JUPYTER_ENABLE_LAB=yes
-RUN apt-get update --yes && \
-    apt-get install --yes --no-install-recommends \
-    "openjdk-${openjdk_version}-jre-headless" \
-    ca-certificates-java && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+# ENV APACHE_SPARK_VERSION="${spark_version}" \
+#     HADOOP_VERSION="${hadoop_version}"
+# ENV JUPYTER_ENABLE_LAB=yes
+# RUN apt-get update --yes && \
+#     apt-get install --yes --no-install-recommends \
+#     "openjdk-${openjdk_version}-jre-headless" \
+#     ca-certificates-java && \
+#     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Spark installation w/o hudi
 # WORKDIR /tmp
@@ -52,48 +53,48 @@ RUN apt-get update --yes && \
 #     tar xzf "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" -C /usr/local --owner root --group root --no-same-owner && \
 #     rm "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz"
 
-# Spark-hudi bundle installation
-WORKDIR /tmp
-ENV HUDI_SPARK_VERSION=0.13.0
-# hudi-spark3.3-bundle_2.12:0.13.0 
-# https://repo1.maven.org/maven2/org/apache/hudi/hudi-spark3.3-bundle_2.12/0.13.0/hudi-spark3.3-bundle_2.12-0.13.0.jar
-RUN wget -q "https://repo1.maven.org/maven2/org/apache/hudi/hudi-spark3.3-bundle_${SCALA_VERSION}/${HUDI_SPARK_VERSION}/hudi-spark3.3-bundle_${SCALA_VERSION}-${HUDI_SPARK_VERSION}.jar" -O hudi-spark3.3-bundle.jar && \
-    wget -q "https://archive.apache.org/dist/spark/spark-${APACHE_SPARK_VERSION}/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" && \
-    echo "${spark_checksum} *spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" | sha512sum -c - && \
-    tar xzf "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" -C /usr/local --owner root --group root --no-same-owner && \
-    rm "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz"
+# # Spark-hudi bundle installation
+# WORKDIR /tmp
+# ENV HUDI_SPARK_VERSION=0.13.0
+# # hudi-spark3.3-bundle_2.12:0.13.0 
+# # https://repo1.maven.org/maven2/org/apache/hudi/hudi-spark3.3-bundle_2.12/0.13.0/hudi-spark3.3-bundle_2.12-0.13.0.jar
+# RUN wget -q "https://repo1.maven.org/maven2/org/apache/hudi/hudi-spark3.3-bundle_${SCALA_VERSION}/${HUDI_SPARK_VERSION}/hudi-spark3.3-bundle_${SCALA_VERSION}-${HUDI_SPARK_VERSION}.jar" -O hudi-spark3.3-bundle.jar && \
+#     wget -q "https://archive.apache.org/dist/spark/spark-${APACHE_SPARK_VERSION}/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" && \
+#     echo "${spark_checksum} *spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" | sha512sum -c - && \
+#     tar xzf "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" -C /usr/local --owner root --group root --no-same-owner && \
+#     rm "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz"
 
-ENV SPARK_HOME /usr/local/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
-ENV PYSPARK_PYTHON /usr/bin/python3
-ENV PYSPARK_DRIVER_PYTHON /usr/bin/python3
-ENV PYTHONPATH $PYTHONPATH:${SPARK_HOME}/python:${SPARK_HOME}/python/lib/py4j-0.10.9-src.zip:/tmp/hudi-spark3-bundle.jar
+# ENV SPARK_HOME /usr/local/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
+# ENV PYSPARK_PYTHON /usr/bin/python3
+# ENV PYSPARK_DRIVER_PYTHON /usr/bin/python3
+# ENV PYTHONPATH $PYTHONPATH:${SPARK_HOME}/python:${SPARK_HOME}/python/lib/py4j-0.10.9-src.zip:/tmp/hudi-spark3-bundle.jar
 
-# latest version of ffmpeg is not in the oficial repos
-RUN apt-get update && apt-get install -y wget bzip2 curl unzip tar gzip && \
-    apt-get install -y nasm yasm
+# # latest version of ffmpeg is not in the oficial repos
+# RUN apt-get update && apt-get install -y wget bzip2 curl unzip tar gzip && \
+#     apt-get install -y nasm yasm
 
-# Install DuckDB CLI
-RUN wget https://github.com/duckdb/duckdb/releases/download/v0.8.0/duckdb_cli-linux-amd64.zip \
-    && unzip duckdb_cli-linux-amd64.zip -d /usr/local/bin \
-    && rm duckdb_cli-linux-amd64.zip
+# # Install DuckDB CLI
+# RUN wget https://github.com/duckdb/duckdb/releases/download/v0.8.0/duckdb_cli-linux-amd64.zip \
+#     && unzip duckdb_cli-linux-amd64.zip -d /usr/local/bin \
+#     && rm duckdb_cli-linux-amd64.zip
 
-WORKDIR /usr/local
+# WORKDIR /usr/local
 
-# Configure Spark
-ENV SPARK_HOME=/usr/local/spark
-ENV SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info" \
-    PATH="${PATH}:${SPARK_HOME}/bin"
+# # Configure Spark
+# ENV SPARK_HOME=/usr/local/spark
+# ENV SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info" \
+#     PATH="${PATH}:${SPARK_HOME}/bin"
 
-RUN ln -s "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}" spark && \
-    # Add a link in the before_notebook hook in order to source automatically PYTHONPATH
-    mkdir -p /usr/local/bin/before-notebook.d && \
-    ln -s "${SPARK_HOME}/sbin/spark-config.sh" /usr/local/bin/before-notebook.d/spark-config.sh
+# RUN ln -s "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}" spark && \
+#     # Add a link in the before_notebook hook in order to source automatically PYTHONPATH
+#     mkdir -p /usr/local/bin/before-notebook.d && \
+#     ln -s "${SPARK_HOME}/sbin/spark-config.sh" /usr/local/bin/before-notebook.d/spark-config.sh
 
-# Fix Spark installation for Java 11 and Apache Arrow library
-# see: https://github.com/apache/spark/pull/27356, https://spark.apache.org/docs/latest/#downloading
-RUN cp -p "${SPARK_HOME}/conf/spark-defaults.conf.template" "${SPARK_HOME}/conf/spark-defaults.conf" && \
-    echo 'spark.driver.extraJavaOptions -Dio.netty.tryReflectionSetAccessible=true' >> "${SPARK_HOME}/conf/spark-defaults.conf" && \
-    echo 'spark.executor.extraJavaOptions -Dio.netty.tryReflectionSetAccessible=true' >> "${SPARK_HOME}/conf/spark-defaults.conf"
+# # Fix Spark installation for Java 11 and Apache Arrow library
+# # see: https://github.com/apache/spark/pull/27356, https://spark.apache.org/docs/latest/#downloading
+# RUN cp -p "${SPARK_HOME}/conf/spark-defaults.conf.template" "${SPARK_HOME}/conf/spark-defaults.conf" && \
+#     echo 'spark.driver.extraJavaOptions -Dio.netty.tryReflectionSetAccessible=true' >> "${SPARK_HOME}/conf/spark-defaults.conf" && \
+#     echo 'spark.executor.extraJavaOptions -Dio.netty.tryReflectionSetAccessible=true' >> "${SPARK_HOME}/conf/spark-defaults.conf"
 
 WORKDIR /usr/local
 
@@ -113,42 +114,34 @@ WORKDIR /tmp
 
 WORKDIR /usr/local
 
-# create directories and set permisisons fro mlflow
-RUN mkdir -p /home/metaflow && \ 
-    mkdir -p /home/metaflow/.metaflowconfig && \
-    mkdir -p /home/work/mlruns && \
-    mkdir -p /home/work/models && \
-    mkdir -p /home/work/database && \
-    chmod 777 /home/work/models
+# create directories and set permissions for mlflow
+RUN mkdir -p /home/work && \
+    sudo chown -R ${NB_USER}:root /home/work
+
+RUN sudo chmod -R 777 /home/work
 
 RUN mamba update mamba --yes && \
     # mamba config --add channels conda-forge && \
     mamba config --add channels bioconda && \
     mamba install --quiet --yes \
-    'pyspark==3.2.3' 'pyarrow==11.0.0' 'pipenv' 'scikit-learn>=1.2.1' 'pydub>=0.25.1' \
-    'googlesearch' 'protobuf==4.21.12' 'scikit-image' 'fastparquet' 'mlflow' 'nltk>=3.8.1' \
+    'pipenv' 'scikit-learn>=1.2.1' 'pydub>=0.25.1' \
+    'protobuf==4.21.12' 'scikit-image' 'fastparquet' 'mlflow==2.3.2' optuna xgboost \
     'pandas>=1.5.3' 'pandasql>=0.7.3' "metaflow==2.8.1" "prefect>=2.0" "fugue[sql]" duckdb \
-    "polars[pyarrow]" elasticsearch optuna eland huggingface_hub 'SQLAlchemy' \
-    'google-api-python-client<=2.81.0' 'openai>=0.27.2' 'google-api-python-client=2.81.0' \
-    'google-auth-oauthlib' 'google-auth-httplib2==0.1.0' && \
+    optuna 'SQLAlchemy' && \
     mamba clean --all -y && \
     fix-permissions "${CONDA_DIR}" && \
     fix-permissions "/home" && \
-    fix-permissions "/home/${NB_USER}" && \
-    fix-permissions "/home/work/mlruns" && \
-    fix-permissions "/home/work/database" && \
-    fix-permissions "/home/metaflow" && \ 
-    fix-permissions "/home/metaflow/.metaflowconfig"
+    fix-permissions "/home/${NB_USER}"
 
 WORKDIR /usr/local
 
 # and finally upgrade some python dependencies with pip
-# RUN pip3 install --no-cache-dir --upgrade "pip==21.3.1" setuptools "google-cloud==0.34.0" google pyOpenSSL "metaflow==2.8.1" \
-RUN pip3 install --default-timeout=200 --upgrade "pip==21.3.1" setuptools pyOpenSSL sentence_transformers    
+RUN pip3 install --default-timeout=200 --upgrade "pip==21.3.1" setuptools pyOpenSSL  
+# RUN pip3 install --default-timeout=200 --upgrade "pip==21.3.1" setuptools pyOpenSSL sentence_transformers    
     # && \ pip3 install "dask<=2023.3.1" --upgrade 
     # && \
     # pip3 install "dask[distributed]" --upgrade
 
 WORKDIR /home/work
 
-RUN apt-get update && apt-get install -y git docker.io
+# RUN apt-get update && apt-get install -y git docker.io

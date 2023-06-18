@@ -86,7 +86,6 @@ networks:
     driver: bridge
 
 volumes:
-  elasticsearch:
   flows:
     driver: local
     driver_opts:
