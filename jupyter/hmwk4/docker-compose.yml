@@ -10,9 +10,8 @@ services:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION}
-      #- PREFECT_API_URL=${PREFECT_API_URL}
-      - PREFECT_API_URL="http://prefect_mlops:4200/api"
-      #- PREFECT_API_KEY=${PREFECT_API_KEY}
+      - PREFECT_API_URL=${PREFECT_API_URL}
+      - PREFECT_API_KEY=${PREFECT_API_KEY}
     container_name: mlops
     user: root
     ports:
@@ -34,16 +33,12 @@ services:
       - PYSPARK_PYTHON=python3
       - PYSPARK_DRIVER_PYTHON=jupyter
       - PYSPARK_DRIVER_PYTHON_OPTS='notebook --no-browser --port=8888 --ip=0.0.0.0 --allow-root'
-      - HUDI_ENABLE_TIMELINE_SERVER=true # Enable the Hudi timeline server
-      - HUDI_TIMELINE_SERVER_BIND_ADDRESS=0.0.0.0 # Bind to all available interfaces
-      - HUDI_TIMELINE_SERVER_WEB_UI_PORT=9999 # Listen on port 9999
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     cpus: 2
-    mem_limit: 8g
+    mem_limit: 12g
     networks:
-      - back-tier
-      - front-tier  
+      - mlops
       # locally-deployed metaflow (for flows testing) 
       # - mfdeploy-metaflow-deployment-netwok
 
@@ -65,7 +60,7 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
     networks:
-      - back-tier
+      - mlops
 
   prefect_mlops:
     build:
@@ -81,49 +76,13 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
     networks:
-      - back-tier
-
-  db:
-    image: postgres
-    container_name: postgresdb
-    restart: always
-    environment:
-      POSTGRES_PASSWORD: example
-    ports:
-      - "5432:5432"
-    networks:
-      - back-tier
-
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - "8080:8080"
-    networks:
-      - back-tier
-      - front-tier  
-
-  grafana:
-    image: grafana/grafana
-    user: "472"
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./config/grafana_datasources.yaml:/etc/grafana/provisioning/datasources/datasource.yaml:ro
-      - ./config/grafana_dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
-      - ./dashboards:/opt/grafana/dashboards
-    networks:
-      - back-tier
-      - front-tier
-    restart: always
+      - mlops
 
 networks:
-  front-tier:
-  back-tier:
+  mlops:
+    driver: bridge
 
 volumes:
-# anonymous docker-managed volume
-  grafana_data: {}
   flows:
     driver: local
     driver_opts:
