@@ -1,0 +1,6 @@
+output
+localstack
+.venv
+.vscode
+__pycache__
+```
